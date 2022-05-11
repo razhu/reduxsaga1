@@ -1,8 +1,19 @@
-import {createStore} from 'redux';
-import {Todo} from './api';
+import {createStore, applyMiddleware} from 'redux';
+import createSagaMiddleware from '@redux-saga/core';
+import {Todo, getTodos} from './api';
+import {put, takeEvery} from "redux-saga/effects";
+
+// SAGA
+function* getTodosAction() {
+    const todos: Todo[] = yield getTodos();
+    yield put({ type: "TODOS_FETCH_SUCCEEDED", payload: todos});
+}
+function* rootSaga(){
+    yield takeEvery("TODOS_FETCH_REQUESTED", getTodosAction);
+}
 
 // REDUCER
-const reducer = (
+export const reducer = (
     state: Todo[] = [],
     action: {type: "TODOS_FETCH_SUCCEEDED"; payload: Todo[]}
 ) => {
@@ -16,4 +27,7 @@ const reducer = (
 }
 
 // STORE
-export const store = createStore(reducer);
+const sagaMiddleware = createSagaMiddleware();
+export const store = createStore(reducer, applyMiddleware(sagaMiddleware));
+sagaMiddleware.run(rootSaga)
+// console.log('xx store ', store);
