@@ -1,16 +1,21 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import './App.css';
 import {Provider, useSelector, useDispatch} from "react-redux";
-import {store, reducer} from "./lib/store";
-import {Todo} from "./lib/api";
-
+import {store, selectTodos, fetchTodos, toggleTodo, removeTodo, addTodo} from "./lib/store";
 
 function TodoApp () {
-  const todos =  useSelector((state: Todo[]) => state)
+  const todos =  useSelector(selectTodos)
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch({type: "TODOS_FETCH_REQUESTED"});
+    dispatch(fetchTodos());
   }, [])
+
+  const textRef = useRef<HTMLInputElement>(null);
+  const onAdd = useCallback(() => {
+    dispatch(addTodo(textRef.current!.value));
+    textRef.current!.value = "";
+  }, [dispatch])
+
   return (
     <div className="App">
       <div className="todos">
@@ -20,19 +25,19 @@ function TodoApp () {
               <input
                 type="checkbox"
                 checked={todo.done}
-                // onChange={() => dispatch(toggleTodo(todo))}
-                onChange={() => {}}
+                onChange={() => dispatch(toggleTodo(todo))}
+                // onChange={() => {}}
               />
               <span>{todo.text}</span>
             </div>
-            {/* <button onClick={() => dispatch(removeTodo(todo))}>Delete</button> */}
-            <button onClick={() => {}}>Delete</button>
+            <button onClick={() => dispatch(removeTodo(todo))}>Delete</button>
+            {/* <button onClick={() => {}}>Delete</button> */}
           </React.Fragment>
         ))}
       </div>
       <div className="add">
-        {/* <input type="text" ref={textRef} />
-        <button onClick={onAdd}>Add</button> */}
+        <input type="text" ref={textRef} />
+        <button onClick={onAdd}>Add</button>
       </div>
     </div>    
   )
